@@ -8,23 +8,17 @@ import re
 import sys
 
 
-def get_run_info_from_path(json_filename, runID=None):
+def get_sample_info_from_json(record_name, json_filename, runID=None):
 
     sampleinfo = {"json_file": None, "episode": None, "accession" : None, "run": None, "lib_repeat" : None}
 
     path, file = os.path.split(json_filename)
 
     sampleinfo["json_file"] = file
-
-    if not runID:
-        for directory in path.split("/"):
-            if directory.startswith("M0"):
-                short_run = directory.split("_")[0:2]
-                sampleinfo["run"] = "_".join(short_run)
-    else:
-        sampleinfo["run"] = runID
+    sampleinfo["run"] = runID
     
-    dataset_id = re.sub('_S\\d*_L\\d*.json$', '', file)
+    dataset_id = re.sub('_S\\d*_L\\d*$', '', record_name)
+
     dataset_id = re.sub('WCMID-', '', dataset_id)
 
     for identifier in dataset_id.split("-"):
@@ -51,8 +45,7 @@ def read_json(json_file):
 def parse_phylo_data_from_json(json_data):
     phylo_dict = {}
 
-    for key in json_data.keys():
-        phylo_data = json_data[key].get("phylogenetics")
+    phylo_data = json_data.get("phylogenetics")
 
     for prop in list(phylo_data):
         s_phylolist = sorted(phylo_data.get(prop), key=lambda x: (phylo_data.get(prop)[x]['percent_coverage']), reverse=True)
@@ -70,8 +63,7 @@ def parse_phylo_data_from_json(json_data):
 def parse_amr_data_from_json(json_data):
     amr_dict = {}
 
-    for key in json_data.keys():
-        amr_data = json_data[key].get("susceptibility")
+    amr_data = json_data.get("susceptibility")
 
     for drug in list(amr_data):
         if "S" in amr_data.get(drug).get("predict"):
@@ -119,7 +111,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Make nice CSV from mykrobe output")
     parser.add_argument("-o", dest="output_file", type=str, help="Path to output CSV file", required=True)
     parser.add_argument("-j", dest="json_files", nargs='+', type=str, help="Path to JSON files", required=True)
-    parser.add_argument("-r", dest="sequencing_run_id", type=str, help="Sequencing Run ID", required=False)
+    parser.add_argument("-r", dest="sequencing_run_id", type=str, help="Sequencing Run ID", required=True)
     args = parser.parse_args()
 
     return args
@@ -132,13 +124,14 @@ if __name__ == "__main__":
     csv_data = []
 
     for file in args.json_files:
-        all_sample_data = {}
-        all_sample_data.update(get_run_info_from_path(file, args.sequencing_run_id))
-
         json_data = read_json(file)
-        
-        all_sample_data.update(parse_phylo_data_from_json(json_data))
-        all_sample_data.update(parse_amr_data_from_json(json_data))
+
+        for record in json_data:
+            all_sample_data = {}
+            all_sample_data.update(get_sample_info_from_json(record, file, args.sequencing_run_id))
+      
+            all_sample_data.update(parse_phylo_data_from_json(json_data.get(record)))
+            all_sample_data.update(parse_amr_data_from_json(json_data.get(record)))
 
 
         csv_data.append(all_sample_data)
