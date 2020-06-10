@@ -21,18 +21,25 @@ def get_sample_info_from_json(record_name, json_filename, runID=None):
 
     dataset_id = re.sub('WCMID-', '', dataset_id)
 
-    for identifier in dataset_id.split("-"):
-        if identifier.startswith("A"):
-            sampleinfo["accession"] = identifier
-        elif identifier.startswith("C") or "P" in identifier or "NCTC" in identifier:
-            sampleinfo["accession"] = "POSCONTROL"
-        elif identifier[0].isdigit:
-            epi_repeat = identifier.split("R")
-            if len(epi_repeat) > 1: 
+    # CONTROL SAMPLE
+    if "CON" in id_list[0]:
+        sampleinfo["accession"] = id_list[1]
+        sampleinfo["episode"] = id_list[1]
+
+    # NOT A CONTROL SAMPLE
+    else:
+        sampleinfo["accession"] = id_list[0]
+
+        if id_list[1][0].isdigit:
+            epi_repeat = id_list[1].split("R")
+            if len(epi_repeat) > 1:
                 sampleinfo["episode"] = epi_repeat[0]
                 sampleinfo["lib_repeat"] = epi_repeat[1]
             else:
                 sampleinfo["episode"] = epi_repeat[0]
+
+        else:
+            sampleinfo["episode"] = id_list[1]
 
     return  {f'1sample.{k}': v for k, v in sampleinfo.items()}
 
