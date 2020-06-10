@@ -20,6 +20,8 @@ def get_sample_info_from_json(record_name, json_filename, runID=None):
     dataset_id = re.sub('_S\\d*_L\\d*$', '', record_name)
 
     dataset_id = re.sub('WCMID-', '', dataset_id)
+    
+    id_list = dataset_id.split('-')
 
     # CONTROL SAMPLE
     if "CON" in id_list[0]:
