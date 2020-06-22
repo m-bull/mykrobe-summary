@@ -17,7 +17,7 @@ def get_sample_info_from_json(record_name, json_filename, runID=None):
     sampleinfo["json_file"] = file
     sampleinfo["run"] = runID
     
-    dataset_id = re.sub('_S\\d*_L\\d*$', '', record_name)
+    dataset_id = re.sub('_S\\d+.*$', '', record_name)
 
     dataset_id = re.sub('WCMID-', '', dataset_id)
     
