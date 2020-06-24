@@ -57,16 +57,27 @@ def parse_phylo_data_from_json(json_data):
     phylo_data = json_data.get("phylogenetics")
 
     for prop in list(phylo_data):
-        s_phylolist = sorted(phylo_data.get(prop), key=lambda x: (phylo_data.get(prop)[x]['percent_coverage']), reverse=True)
+        if "sub_complex" in prop:
+                continue
+
+        s_phylolist = sorted(phylo_data.get(prop), key=lambda x: (phylo_data.get(prop)[x]['median_depth']), reverse=True)
         for val, list_prop in enumerate(s_phylolist, 1):
             prop_val = prop + str(val)
             prop_pct = prop_val + "_pct" 
             prop_med = prop_val + "_median" 
 
             phylo_dict[prop_val] = list_prop
-            phylo_dict[prop_pct] = phylo_data.get(prop).get(list_prop).get("percent_coverage")
-            phylo_dict[prop_med] = phylo_data.get(prop).get(list_prop).get("median_depth")
+            if phylo_data.get(prop).get(list_prop).get("percent_coverage") < 0:
+                phylo_dict[prop_pct] = None
+            else:
+                phylo_dict[prop_pct] = phylo_data.get(prop).get(list_prop).get("percent_coverage")
 
+            if phylo_data.get(prop).get(list_prop).get("median_depth") < 0:
+                phylo_dict[prop_med] = None
+            else:
+                phylo_dict[prop_med] = phylo_data.get(prop).get(list_prop).get("median_depth")
+            break
+            
     return {f'2phylo.{k}': v for k, v in phylo_dict.items()}
 
 def parse_amr_data_from_json(json_data):
