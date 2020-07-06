@@ -24,9 +24,9 @@ def get_sample_info_from_json(record_name, json_filename, runID=None):
     id_list = dataset_id.split('-')
 
     # CONTROL SAMPLE
-    if "CON" in id_list[0]:
-        sampleinfo["accession"] = id_list[1]
-        sampleinfo["episode"] = id_list[1]
+    if "CON" in id_list[0] or "NEG" in id_list[0] or "NCTC" in id_list[0] or "POS" in id_list[0]:
+        sampleinfo["accession"] = "-".join(id_list)
+        sampleinfo["episode"] = "-".join(id_list)
 
     # NOT A CONTROL SAMPLE
     else:
