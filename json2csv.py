@@ -30,6 +30,9 @@ def get_sample_info_from_json(record_name, json_filename, runID=None):
 
     # NOT A CONTROL SAMPLE
     else:
+        if len(id_list) < 2:
+            id_list.append(id_list[0])
+
         sampleinfo["accession"] = id_list[0]
 
         if id_list[1][0].isdigit:
